@@ -122,7 +122,7 @@ function m.processEncounter()
 
 		local strength = math.random(t.encounter.baseAttack);
 		local defense = math.random(t.player.defense);
-
+--[[
 		for k, id in pairs(t.player.inventory) do
 			-- Objects whose key is a number are in the 'hold'
 			-- area, not equipped, so don't count those.
@@ -149,7 +149,7 @@ function m.processEncounter()
 				defense = item.onHit(defense);
 			end
 		end
-
+]]
 		if strength - defense > -1 then
 			t.player.health =
 				t.player.health - (strength - defense);

@@ -77,16 +77,16 @@ taget.player = {
 	experience = 0,
 	nextLevel = 25,
 	inventory = {
-		helmet = 3,
-		chestplate = 4,
-		leggings = 5,
-		boots = 6,
-		weapon = 1,
+		helmet = "worn_helmet",
+		chestplate = "worn_chestplate",
+		leggings = "worn_leggings",
+		boots = "worn_boots",
+		weapon = "soulthief",
 		equipment = {
 			limit = 3,
-			2, 0, 0,
+			"useless_ring", "none", "none",
 		},
-		7,
+		"bread",
 	},
 };
 
@@ -131,7 +131,7 @@ while true do
 
 	local p = taget.player;
 
-	for k, id in pairs(p.inventory) do
+--[[	for k, id in pairs(p.inventory) do
 		-- Objects whose key is a number are in the 'hold'
 		-- area, not equipped, so don't count those.
 		-- Having a value type of table means that it is
@@ -153,7 +153,7 @@ while true do
 
 		if item.onTurn then item.onTurn() end
 	end
-
+]]
 	if turnsUntilHealth == 0 then
 		if p.health < p.maxHealth then
 			p.health = p.health + 1;

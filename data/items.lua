@@ -20,16 +20,16 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 ]]
 
 return {
-	[0] = {
+	["none"] = {
 		name = "None",
-		type = taget.item.type.none,
+		type = "none",
 		description = [[
 There's nothing here.
 ]],
 	},
-	{
+	["soulthief"] = {
 		name = "Soulthief",
-		type = taget.item.type.weapon,
+		type = "weapon",
 		description = [[
 Soulthief was enchanted long ago with very healthful properties.
 Despite Soulthief only dealing 75% of the base damage, its use
@@ -49,9 +49,9 @@ stems from having half of this 75% go into you directly as health.
 			return newDamage;
 		end,
 	},
-	{
+	["useless_ring"] = {
 		name = "Useless Ring of Uselessness",
-		type = taget.item.type.equipment,
+		type = "equipment",
 		description = [[
 A useless ring. Greaaat. :/
 ]],
@@ -59,41 +59,41 @@ A useless ring. Greaaat. :/
 			print("Your useless ring continues to be so!\n");
 		end,
 	},
-	{
+	["worn_helmet"] = {
 		name = "Worn Helmet",
-		type = taget.item.type.helmet,
+		type = "helmet",
 		description = [[
 A really worn down helmet. Not much, but better than nothing...
 ]],
 		onHit = function(a) return (a + 1) end,
 	},
-	{
+	["worn_chestplate"] = {
 		name = "Worn Chestplate",
-		type = taget.item.type.chestplate,
+		type = "chestplate",
 		description = [[
 A really worn down chestplate. Not much, but better than nothing...
 ]],
 		onHit = function(a) return (a + 1) end,
 	},
-	{
+	["worn_leggings"] = {
 		name = "Worn Leggings",
-		type = taget.item.type.leggings,
+		type = "leggings",
 		description = [[
 Some really worn down leggings. Not much, but better than nothing...
 ]],
 		onHit = function(a) return (a + 1) end,
 	},
-	{
+	["worn_boots"] = {
 		name = "Worn Boots",
-		type = taget.item.type.boots,
+		type = "boots",
 		description = [[
 Some really worn down boots. Not much, but better than nothing...
 ]],
 		onHit = function(a) return (a + 1) end,
 	},
-	{
+	["bread"] = {
 		name = "Bread",
-		type = taget.item.type.food,
+		type = "food",
 		description = [[
 Just your average loaf of bread.
 ]],

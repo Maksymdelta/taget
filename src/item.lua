@@ -22,33 +22,57 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 local i = {};
 
 i.type = table.setReadOnly{
-	none = 0,
-	helmet = 1,
-	chestplate = 2,
-	leggings = 3,
-	boots = 4,
-	weapon = 5,
-	equipment = 6,
-	food = 7,
-	misc = 8,
-};
-
-local itemTypeToName = table.setReadOnly{
-	[i.type.none] = "none",
-	[i.type.weapon] = "weapon",
-	[i.type.helmet] = "helmet",
-	[i.type.chestplate] = "chestplate",
-	[i.type.leggings] = "leggings",
-	[i.type.boots] = "boots",
-	[i.type.equipment] = "equipment",
-	[i.type.food] = "food",
-	[i.type.misc] = "misc",
+	none = true,
+	weapon = true,
+	helmet = true,
+	chestplate = true,
+	leggings = true,
+	boots = true,
+	equipment = true,
+	food = true,
+	misc = true,
 };
 
 i.list = {};
 
+local function checkItemValidity(k)
+	if tonumber(k) then
+		io.write("Warning : using a numerical item id "..k..
+			", this may cause problems later!\n");
+	end
+
+	local entry = i.list[k];
+
+	if not entry.name then
+		io.write("Warning : item id \""..k.."\" does not have a "..
+			"valid name entry!\n");
+	end
+
+	if not i.type[entry.type] then
+		io.write("Warning : item id \""..k.."\" does not have a "..
+			"valid type entry!\n");
+	end
+
+	if not entry.description then
+		io.write("Warning : item id \""..k.."\" does not have a "..
+			"valid description entry!\n");
+	end
+
+	if k ~= "none" and type(entry.onAttack) ~= "function" and
+			type(entry.onHit) ~= "function" and
+			type(entry.onTurn) ~= "function" and
+			type(entry.onUse) ~= "function" then
+		io.write("Warning : item id \""..k.."\" does not have any "..
+			"valid event hooks!\n");
+	end
+end
+
 function i.initialize()
 	i.list = dofile("data/items.lua");
+
+	for k in pairs(i.list) do
+		checkItemValidity(k);
+	end
 end
 
 function i.getItem(id)
@@ -69,7 +93,7 @@ function i.listInv(input)
 	print("\nEquipment : ");
 
 	for id = 1, inv.equipment.limit do
-		print(id.." - "..i.getItem(inv.equipment[id]).name);
+		print(i.getItem(inv.equipment[id]).name);
 	end
 
 	print("\nStored : ");
@@ -81,21 +105,22 @@ function i.listInv(input)
 	print();
 end
 
-function i.getItemTypeName(id)
-	return itemTypeToName[id.type];
-end
+--[[local nameToSlot = table.setReadOnly{
+	weapon = taget.player.inventory.weapon;
+	w = taget.player.inventory.weapon;
+	helmet = taget.player.inventory.helmet;
+	h = taget.player.inventory.helmet;
+	chestplate = taget.player.inventory.chestplate;
+	c = taget.player.inventory.chestplate;
+	leggings = taget.player.inventory.leggings;
+	l = taget.player.inventory.leggings;
+	boots = taget.player.inventory.boots;
+	b = taget.player.inventory.boots;
+};]]
 
 function i.getItemId(itemType, itemSlot)
-	if itemType == "weapon" or itemType == "w" then
-		return taget.player.inventory.weapon;
-	elseif itemType == "helmet" or itemType == "h" then
-		return taget.player.inventory.helmet;
-	elseif itemType == "chestplate" or itemType == "c" then
-		return taget.player.inventory.chestplate;
-	elseif itemType == "leggings" or itemType == "l"  then
-		return taget.player.inventory.leggings;
-	elseif itemType == "boots" or itemType == "b" then
-		return taget.player.inventory.boots;
+	if nameToSlot[itemType] then
+		return nameToSlot[itemType];
 	elseif itemType == "equipment" or itemType == "e" then
 		return taget.player.inventory.equipment[itemSlot];
 	elseif itemType == "inventory" or itemType == "i" then
@@ -124,7 +149,7 @@ function i.displayInfo(invId)
 	end
 
 	print("Item name - "..item.name);
-	print("\nItem type - "..i.getItemTypeName(item));
+	print("\nItem type - "..item.type);
 	print("\nItem description - ");
 	io.write(item.description);
 	print("\nThis item has properties - ");
@@ -170,7 +195,7 @@ function i.useItem(id)
 	if item.onUse then
 		item.onUse();
 
-		if item.type == i.type.food then
+		if item.type == "food" then
 			i.deleteItem(id[2], id[3]);
 		end
 	else
