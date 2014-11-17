@@ -78,7 +78,8 @@ local function status()
 	print("Health : "..taget.player.health.."/"..taget.player.maxHealth);
 	print("Attack : "..taget.player.attack);
 	print("Defense : "..taget.player.defense);
-	print("Next level : "..(taget.player.nextLevel - taget.player.experience));
+	print("Next level : "..
+		(taget.player.nextLevel - taget.player.experience));
 	io.write("\n");
 end
 
@@ -114,7 +115,8 @@ local keywords = {
 	},
 };
 
--- TODO : Simplify move()'s internal logic some how... maybe a movement delta table?
+-- TODO : Simplify move()'s internal logic some how...
+-- maybe a movement delta table?
 
 local function move(table)
 	local direction = tostring(table[2]);
@@ -244,11 +246,16 @@ local function look()
 	local p = taget.player;
 	local dungeon = taget.dungeon;
 
-	print("You are currently in a "..taget.world.getTileTypePrint(dungeon, p.x, p.y, p.z));
-	print("In front of you is a "..taget.world.getTileTypePrint(dungeon, p.x, p.y - 1, p.z));
-	print("Behind you is a "..taget.world.getTileTypePrint(dungeon, p.x, p.y + 1, p.z));
-	print("To your left is a "..taget.world.getTileTypePrint(dungeon, p.x - 1, p.y, p.z));
-	print("To your right is a "..taget.world.getTileTypePrint(dungeon, p.x + 1, p.y, p.z).."\n");
+	print("You are currently in a "..
+		taget.world.getTileTypePrint(dungeon, p.x, p.y, p.z));
+	print("In front of you is a "..
+		taget.world.getTileTypePrint(dungeon, p.x, p.y - 1, p.z));
+	print("Behind you is a "..
+		taget.world.getTileTypePrint(dungeon, p.x, p.y + 1, p.z));
+	print("To your left is a "..
+		taget.world.getTileTypePrint(dungeon, p.x - 1, p.y, p.z));
+	print("To your right is a "..
+		taget.world.getTileTypePrint(dungeon, p.x + 1, p.y, p.z).."\n");
 end
 
 local function attack(name)
@@ -257,19 +264,25 @@ local function attack(name)
 
 	if e and e.x == p.x and e.y == p.y and e.z == p.z then
 		math.randomseed(os.time());
+
+		local defense = (e.baseDefense > 0) and
+			math.random(e.baseDefense) or 0;
 		
-		local defense = (e.baseDefense > 0) and math.random(e.baseDefense) or 0;
 		local strength = math.random(p.attack);
 		
 		if strength - defense > -1 then
 			e.baseHealth = e.baseHealth - (strength - defense);
 		else
-			-- Set strength and defense to dummy values that come out to 0
+			-- Set strength and defense to dummy values
+			-- that come out to 0, to prevent the high
+			-- defense value from /adding/ health
 			strength = 1; defense = 1;
 		end
 
-		print("Hit the "..e.name.." for "..(strength - defense).." damage!");
-		print("The "..e.name.." has "..e.baseHealth.." hit points left!\n");
+		print("Hit the "..e.name.." for "..
+			(strength - defense).." damage!");
+		print("The "..e.name.." has "..
+			e.baseHealth.." hit points left!\n");
 		return;
 	end
 

@@ -23,20 +23,35 @@ local m = {};
 
 print("Loading monster data...");
 m.list = dofile("data/monsters.txt");
-taget.encounter = nil;
 
 local function createEncounter()
 	math.randomseed(os.time());
 	local encounterChance = math.random(1, 100);
 	local monsterNum = math.random(1, #m.list);
 
-	if m.list[monsterNum].startFloor <= taget.player.z and encounterChance <= m.list[monsterNum].rarity then
+	if m.list[monsterNum].startFloor <= taget.player.z
+	and encounterChance <= m.list[monsterNum].rarity then
 		taget.encounter = table.copy(m.list[monsterNum]);
 
-		taget.encounter.baseHealth = (taget.player.z == 1) and taget.encounter.baseHealth or math.floor(taget.encounter.baseHealth * ((taget.player.z + 1) / 2));
-		taget.encounter.baseAttack = (taget.player.z == 1) and taget.encounter.baseAttack or math.floor(taget.encounter.baseAttack * ((taget.player.z + 1) / 2));
-		taget.encounter.baseDefense = (taget.player.z == 1) and taget.encounter.baseDefense or math.floor(taget.encounter.baseDefense * ((taget.player.z + 1) / 2));
-		taget.encounter.baseExp = (taget.player.z == 1) and taget.encounter.baseExp or math.floor(taget.encounter.baseExp * ((taget.player.z + 1) / 2));
+		taget.encounter.baseHealth = (taget.player.z == 1) and
+			taget.encounter.baseHealth or
+			math.floor(taget.encounter.baseHealth *
+				((taget.player.z + 1) / 2));
+
+		taget.encounter.baseAttack = (taget.player.z == 1) and
+			taget.encounter.baseAttack or
+			math.floor(taget.encounter.baseAttack *
+				((taget.player.z + 1) / 2));
+
+		taget.encounter.baseDefense = (taget.player.z == 1) and
+			taget.encounter.baseDefense or
+			math.floor(taget.encounter.baseDefense *
+				((taget.player.z + 1) / 2));
+
+		taget.encounter.baseExp = (taget.player.z == 1) and
+			taget.encounter.baseExp or
+			math.floor(taget.encounter.baseExp *
+				((taget.player.z + 1) / 2));
 
 		taget.encounter.x = taget.player.x;
 		taget.encounter.y = taget.player.y;
@@ -47,62 +62,70 @@ local function createEncounter()
 end
 
 function m.processEncounter()
-	if not taget.encounter then
-		if taget.world.getTileType(taget.dungeon, taget.player.x, taget.player.y, taget.player.z) == "boss" then
-			taget.encounter = table.copy(m.list.boss);
+	local t = taget;
+	local e = t.encounter;
+	local p = t.player;
 
-			taget.encounter.x = taget.player.x;
-			taget.encounter.y = taget.player.y;
-			taget.encounter.z = taget.player.z;
+	if not e then
+		if t.world.getTileType(t.dungeon, p.x, p.y, p.z) == "boss" then
+			e = table.copy(m.list.boss);
 
-			print("The dungeon boss "..taget.encounter.name.." has appeared!\n");
+			e.x = p.x;
+			e.y = p.y;
+			e.z = p.z;
+
+			print("The dungeon boss "..e.name.." has appeared!\n");
 		else
 			createEncounter();
 		end
 	else
-		if taget.encounter.x ~= taget.player.x or taget.encounter.y ~= taget.player.y or taget.encounter.z ~= taget.player.z then
-			taget.encounter = nil;
+		if e.x ~= p.x or e.y ~= p.y or e.z ~= p.z then
+			e = nil;
 			return;
 		end
 
-		if taget.encounter.baseHealth <= 0 then
-			print("Defeated the "..taget.encounter.name.."!");
+		if e.baseHealth <= 0 then
+			print("Defeated the "..e.name.."!");
 			
-			if taget.encounter.name == m.list.boss.name then
+			if e.name == m.list.boss.name then
 				print("You win!");
 				os.exit();
 			end
 
-			taget.player.experience = taget.player.experience + taget.encounter.baseExp;
-			print("Got "..taget.encounter.baseExp.." experience points!\n");
+			p.experience = p.experience + e.baseExp;
+			print("Got "..e.baseExp.." experience points!\n");
 
-			taget.encounter = nil;
+			e = nil;
 
-			if taget.player.experience >= taget.player.nextLevel then
-				taget.player.level = taget.player.level + 1;
-				print("Got to level "..taget.player.level.."!");
-				taget.player.nextLevel = taget.player.nextLevel + (25 * taget.player.level);
-				taget.input.chooseLevelUp();
+			if p.experience >= p.nextLevel then
+				p.level = p.level + 1;
+				print("Got to level "..p.level.."!");
+				p.nextLevel = p.nextLevel + (25 * p.level);
+				t.input.chooseLevelUp();
 			end
 
-			print("Next level : "..(taget.player.nextLevel - taget.player.experience).." more experience points\n");
+			print("Next level : "..(p.nextLevel - p.experience)..
+				" more experience points\n");
 			return;
 		end
 
-		local strength = math.random(taget.encounter.baseAttack);
-		local defense = math.random(taget.player.defense);
+		local strength = math.random(e.baseAttack);
+		local defense = math.random(p.defense);
 
 		if strength - defense > -1 then
-			taget.player.health = taget.player.health - (strength - defense);
+			p.health = p.health - (strength - defense);
 		else
-			-- Set them to dummy values that come out to 0
+			-- Set strength and defense to dummy values
+			-- that come out to 0, to prevent the high
+			-- defense value from /adding/ health
 			strength = 1; defense = 1;
 		end
 
-		print("The "..taget.encounter.name.." hit you for "..(strength - defense).." damage!");
-		print("You have "..taget.player.health.." hit points left!\n");
+		print("The "..e.name.." hit you for "..
+			(strength - defense).." damage!");
+		print("You have "..p.health.." hit points left!\n");
 
-		if taget.player.health <= 0 then
+		if p.health <= 0 then
 			print("Game over! You died!");
 			os.exit();
 		end

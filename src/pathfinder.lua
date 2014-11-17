@@ -53,7 +53,7 @@ end
 	end
 end]]
 
-local function addPathStep(path, directionWent)
+local function addPathNode(path, directionWent)
 	if type(path) ~= "table" then
 		error("path - expected table, got "..type(path), 2);
 	end
@@ -88,40 +88,42 @@ local function addPathStep(path, directionWent)
 	};
 end
 
-function p.wallIsOk(dungeon, specials, floor, isFirstFloor)
-	local startX, startY = -1, -1;
+local function findStartPoint(d, f)
+	if f == 1 then
+		return math.ceil(#d[1] / 2), math.ceil(#d[1][1] / 2);
+	end
 
-	-- Find startpoint
-	if isFirstFloor then
-		-- Easy
-		startX = math.ceil(#dungeon[1] / 2);
-		startY = math.ceil(#dungeon[1][1] / 2);
-	else
-		-- Iterate through until we find a ladder, on this and the floor above
-		for a = 1, #dungeon[1] do
-			for b = 1, #dungeon[1][1] do
-				if dungeon[floor][a][b].type == taget.world.room.ladder and dungeon[floor - 1][a][b].type == taget.world.room.ladder then
-					startX = a;
-					startY = b;
-					goto location_breakout;
-				end
+	for a = 1, #d[1] do
+		for b = 1, #d[1][1] do
+			if d[f][a][b].type == taget.world.room.ladder and
+					d[f - 1][a][b].type ==
+					taget.world.room.ladder then
+				return a, b;
 			end
 		end
 	end
 
-	::location_breakout::;
+	return -1, -1;
+end
 
-	if startX == -1 or startY == -1 then error("Did not find starting locations for floor "..floor.."!", 2) end
+function p.wallIsOk(dungeon, specials, f)
+	local startX, startY = findStartPoint(dungeon, f);
+
+	if startX == -1 or startY == -1 then
+		error("Did not find starting locations for floor "..f.."!", 2);
+	end
 
 	-- Loop through all of the endpoints
 	
 	local didPass = true;
+
+	local dir = taget.world.direction;
 	
-	for _, endpoint in pairs(endpoints[floor]) do
+	for _, endpoint in pairs(endpoints[f]) do
 		--[[
-			Set up our path. Fill in the first step by hand so that the
-			direction checking logic doesn't choke on values that don't
-			exist
+			Set up our path. Fill in the first step by hand so
+			that the direction checking logic doesn't choke on
+			values that don't exist
 		]]
 		
 		local path = {
@@ -129,10 +131,10 @@ function p.wallIsOk(dungeon, specials, floor, isFirstFloor)
 				x = startX,
 				y = startY,
 				hasGone = {
-					[taget.world.direction.north] = false,
-					[taget.world.direction.east] = false,
-					[taget.world.direction.south] = false,
-					[taget.world.direction.west] = false,
+					[dir.north] = false,
+					[dir.east] = false,
+					[dir.south] = false,
+					[dir.west] = false,
 				},
 			}
 		};
@@ -143,46 +145,46 @@ function p.wallIsOk(dungeon, specials, floor, isFirstFloor)
 
 		while true do
 			if path[#path].x == 1 then
-				path[#path].hasGone[taget.world.direction.west] = true;
+				path[#path].hasGone[dir.west] = true;
 			end
 
 			if path[#path].y == 1 then
-				path[#path].hasGone[taget.world.direction.north] = true;
+				path[#path].hasGone[dir.north] = true;
 			end
 
 			if path[#path].x == #specials[1] then
-				path[#path].hasGone[taget.world.direction.east] = true;
+				path[#path].hasGone[dir.east] = true;
 			end
 
 			if path[#path].y == #specials[1][1] then
-				path[#path].hasGone[taget.world.direction.south] = true;
+				path[#path].hasGone[dir.south] = true;
 			end
 
 			local lowestCost = math.huge;
 			local lowestDirection = -1;
 
-			if not path[#path].hasGone[taget.world.direction.north] and (path[#path].y > 1 and specials[floor][path[#path].x][path[#path].y - 1] ~= 0) then
-				costF[taget.world.direction.north] = #path + math.abs(path[#path].x - endpoint.x) + math.abs((path[#path].y - 1) - endpoint.y);
+			if not path[#path].hasGone[dir.north] and (path[#path].y > 1 and specials[f][path[#path].x][path[#path].y - 1] ~= 0) then
+				costF[dir.north] = #path + math.abs(path[#path].x - endpoint.x) + math.abs((path[#path].y - 1) - endpoint.y);
 			else
-				costF[taget.world.direction.north] = math.huge;
+				costF[dir.north] = math.huge;
 			end
 
-			if not path[#path].hasGone[taget.world.direction.east] and (path[#path].x < #specials[1][1] and specials[floor][path[#path].x + 1][path[#path].y] ~= 0) then
-				costF[taget.world.direction.east] = #path + math.abs((path[#path].x + 1) - endpoint.x) + math.abs(path[#path].y - endpoint.y);
+			if not path[#path].hasGone[dir.east] and (path[#path].x < #specials[1][1] and specials[f][path[#path].x + 1][path[#path].y] ~= 0) then
+				costF[dir.east] = #path + math.abs((path[#path].x + 1) - endpoint.x) + math.abs(path[#path].y - endpoint.y);
 			else
-				costF[taget.world.direction.east] = math.huge;
+				costF[dir.east] = math.huge;
 			end
 
-			if not path[#path].hasGone[taget.world.direction.south] and (path[#path].y < #specials[1] and specials[floor][path[#path].x][path[#path].y + 1] ~= 0) then
-				costF[taget.world.direction.south] = #path + math.abs(path[#path].x - endpoint.x) + math.abs((path[#path].y + 1) - endpoint.y);
+			if not path[#path].hasGone[dir.south] and (path[#path].y < #specials[1] and specials[f][path[#path].x][path[#path].y + 1] ~= 0) then
+				costF[dir.south] = #path + math.abs(path[#path].x - endpoint.x) + math.abs((path[#path].y + 1) - endpoint.y);
 			else
-				costF[taget.world.direction.south] = math.huge;   
+				costF[dir.south] = math.huge;
 			end
 
-			if not path[#path].hasGone[taget.world.direction.west] and (path[#path].x > 1 and specials[floor][path[#path].x - 1][path[#path].y] ~= 0) then
-				costF[taget.world.direction.west] = #path + math.abs((path[#path].x - 1) - endpoint.x) + math.abs(path[#path].y - endpoint.y);
+			if not path[#path].hasGone[dir.west] and (path[#path].x > 1 and specials[f][path[#path].x - 1][path[#path].y] ~= 0) then
+				costF[dir.west] = #path + math.abs((path[#path].x - 1) - endpoint.x) + math.abs(path[#path].y - endpoint.y);
 			else
-				costF[taget.world.direction.west] = math.huge;
+				costF[dir.west] = math.huge;
 			end
 			
 			for a = 1, 4 do
@@ -197,7 +199,7 @@ function p.wallIsOk(dungeon, specials, floor, isFirstFloor)
 			end
 			
 			if not path[#path].hasGone[lowestDirection] then
-				addPathStep(path, lowestDirection);
+				addPathNode(path, lowestDirection);
 			else
 				path[#path] = nil;
 			end

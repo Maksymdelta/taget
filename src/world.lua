@@ -99,7 +99,8 @@ function w.generateDungeon(floors, width, length, suppressMessages)
 			local j = math.random(width);
 			local k = math.random(length);
 
-			if i == 1 and (j == math.ceil(width / 2) and k == math.ceil(length / 2)) then
+			if i == 1 and (j == math.ceil(width / 2) and
+				       k == math.ceil(length / 2)) then
 				-- The spawnpoint is here, avoid it
 				goto ladder_continue;
 			elseif dungeon[i][j][k].type == w.room.ladder then
@@ -117,7 +118,8 @@ function w.generateDungeon(floors, width, length, suppressMessages)
 		end
 	end
 
-	-- TODO : Add a proper inventory system, then finish implementing shops and loot chests.
+	-- TODO : Add a proper inventory system, then finish
+	-- implementing shops and loot chests.
 
 	--[[if not suppressMessages then print("Generating shops...") end
 
@@ -141,7 +143,7 @@ function w.generateDungeon(floors, width, length, suppressMessages)
 
 			::shop_continue::;
 		end
-	end --]]
+	end ]]
 
 	--[[ if not suppressMessages then print("Generating loot chests...") end
 
@@ -165,7 +167,7 @@ function w.generateDungeon(floors, width, length, suppressMessages)
 
 			::loot_continue::;
 		end
-	end --]]
+	end ]]
 
 	if not suppressMessages then print("Generating dungeon boss...") end
 
@@ -187,22 +189,22 @@ function w.generateDungeon(floors, width, length, suppressMessages)
 	for i = 1, floors do
 		for a = 1, math.floor((width * length) * 0.25) do
 			while true do
-				local isFirstFloor = (i == 1) and true or false;
-
 				local j = math.random(width);
 				local k = math.random(length);
 
 				if i == 1 and (j == math.ceil(width / 2) and k == math.ceil(length / 2)) then
 					-- Spawnpoint
 					goto wall_continue;
-				elseif dungeon[i][j][k].type == w.room.standard then
+				elseif dungeon[i][j][k].type ==
+						w.room.standard then
 					dungeon[i][j][k].type = w.room.wall;
 					specials[i][j][k] = 0;
 
-					if w.pathfinder.wallIsOk(dungeon, specials, i, isFirstFloor) then 
+					if w.pathfinder.wallIsOk(dungeon, specials, i) then
 						break;
 					else
-						dungeon[i][j][k].type = w.room.standard;
+						dungeon[i][j][k].type =
+							w.room.standard;
 						specials[i][j][k] = 1;
 					end
 				end
@@ -228,13 +230,13 @@ local floorSymbols = table.setReadOnly{
 	[w.room.ladder] = "#",
 };
 
-function w.displayFloorMap(dungeon, floor, player, showAll)
-	for j = 1, #dungeon[floor][1] do
-		for i = 1, #dungeon[floor] do
-			if floor == player.z and (i == player.x and j == player.y) then
+function w.displayFloorMap(d, f, p, showAll)
+	for j = 1, #d[f][1] do
+		for i = 1, #d[f] do
+			if f == p.z and (i == p.x and j == p.y) then
 				io.write("X");
-			elseif showAll or dungeon[floor][i][j].explored then
-				io.write(floorSymbols[dungeon[floor][i][j].type]);
+			elseif showAll or d[f][i][j].explored then
+				io.write(floorSymbols[d[f][i][j].type]);
 			else
 				io.write("?");
 			end

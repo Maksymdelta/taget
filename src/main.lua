@@ -109,10 +109,12 @@ while true do
 	taget.monster.processEncounter();
 
 	if turnsUntilHealth == 0 then
-		if (taget.player.maxHealth - taget.player.health) < 2 * taget.player.z then
+		if (taget.player.maxHealth - taget.player.health) <
+				2 * taget.player.z then
 			taget.player.health = taget.player.maxHealth;
 		else
-			taget.player.health = taget.player.health + (2 * taget.player.z);
+			taget.player.health = taget.player.health +
+				(2 * taget.player.z);
 		end
 
 		turnsUntilHealth  = 5;
