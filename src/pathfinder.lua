@@ -40,7 +40,7 @@ function p.createEndpoint(floor, x, y)
 		endpoints[floor] = {};
 	end
 	
-	endpoints[floor][#endpoints + 1] = { x = x, y = y, };
+	endpoints[floor][#endpoints[floor] + 1] = { x = x, y = y, };
 end
 
 --[[local function displaySpecialMap(floor)
