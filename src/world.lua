@@ -58,7 +58,7 @@ function w.generateDungeon(floors, width, length, suppressMessages)
 		error("length - expected number, got "..type(floors), 2);
 	end
 
-	local start_time = os.time();
+	local start_time = os.clock();
 
 	dungeon = {};
 	specials = {};
@@ -215,7 +215,7 @@ function w.generateDungeon(floors, width, length, suppressMessages)
 	end
 
 	if not suppressMessages then
-		print("Complete! Took "..os.time() - start_time.." seconds.\n");
+		print("Complete! Took "..os.clock() - start_time.." seconds.\n");
 	end
 
 	return dungeon;
