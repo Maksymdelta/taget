@@ -95,9 +95,8 @@ local function findStartPoint(d, f)
 
 	for a = 1, #d[1] do
 		for b = 1, #d[1][1] do
-			if d[f][a][b].type == taget.world.room.ladder and
-					d[f - 1][a][b].type ==
-					taget.world.room.ladder then
+			if d[f][a][b].type == "ladder" and
+					d[f - 1][a][b].type == "ladder" then
 				return a, b;
 			end
 		end

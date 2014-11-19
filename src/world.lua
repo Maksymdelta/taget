@@ -24,16 +24,14 @@ local w = {};
 w.pathfinder = require("pathfinder");
 
 -- {{{
--- Note : ensure 'wall' is always the last entry,
--- otherwise pathfinder logic will be broken.
 
-w.room = table.setReadOnly{
-	standard = 1,
+w.roomValue = table.setReadOnly{
+	standard = 0,
 	chest = 2,
-	shop = 3,
-	boss = 4,
-	ladder = 5,
-	wall = 6,
+	shop = 2,
+	boss = 2,
+	ladder = 2,
+	wall = 1,
 };
 
 w.direction = table.setReadOnly{
@@ -75,7 +73,7 @@ function w.generateDungeon(floors, width, length, suppressMessages)
 
 			for c = 1, length do
 				dungeon[a][b][c] = {
-					type = w.room.standard,
+					type = "standard",
 					explored = false,
 					id = idCount,
 				};
@@ -103,14 +101,14 @@ function w.generateDungeon(floors, width, length, suppressMessages)
 				       k == math.ceil(length / 2)) then
 				-- The spawnpoint is here, avoid it
 				goto ladder_continue;
-			elseif dungeon[i][j][k].type == w.room.ladder then
+			elseif dungeon[i][j][k].type == "ladder" then
 				-- Already occupied, avoid here too
 				goto ladder_continue;
 			else
-				dungeon[i][j][k].type = w.room.ladder;
+				dungeon[i][j][k].type = "ladder";
 				w.pathfinder.createEndpoint(i, j, k);
 
-				dungeon[i + 1][j][k].type = w.room.ladder;
+				dungeon[i + 1][j][k].type = "ladder";
 				break;
 			end
 
@@ -177,8 +175,8 @@ function w.generateDungeon(floors, width, length, suppressMessages)
 		local j = math.random(width);
 		local k = math.random(length);
 
-		if dungeon[floors][j][k].type == w.room.standard then
-			dungeon[floors][j][k].type = w.room.boss;
+		if dungeon[floors][j][k].type == "standard" then
+			dungeon[floors][j][k].type = "boss";
 			w.pathfinder.createEndpoint(floors, j, k);
 			break;
 		end
@@ -195,16 +193,14 @@ function w.generateDungeon(floors, width, length, suppressMessages)
 				if i == 1 and (j == math.ceil(width / 2) and k == math.ceil(length / 2)) then
 					-- Spawnpoint
 					goto wall_continue;
-				elseif dungeon[i][j][k].type ==
-						w.room.standard then
-					dungeon[i][j][k].type = w.room.wall;
+				elseif dungeon[i][j][k].type == "standard" then
+					dungeon[i][j][k].type = "wall";
 					specials[i][j][k] = 0;
 
 					if w.pathfinder.wallIsOk(dungeon, specials, i) then
 						break;
 					else
-						dungeon[i][j][k].type =
-							w.room.standard;
+						dungeon[i][j][k].type = "standard";
 						specials[i][j][k] = 1;
 					end
 				end
@@ -222,12 +218,12 @@ function w.generateDungeon(floors, width, length, suppressMessages)
 end
 
 local floorSymbols = table.setReadOnly{
-	[w.room.standard] = ".",
-	[w.room.wall] = "@",
-	[w.room.chest] = "C",
-	[w.room.shop] = "$",
-	[w.room.boss] = "B",
-	[w.room.ladder] = "#",
+	standard = ".",
+	wall = "@",
+	chest = "C",
+	shop = "$",
+	boss = "B",
+	ladder = "#",
 };
 
 function w.displayFloorMap(d, f, p, showAll)
@@ -246,32 +242,21 @@ function w.displayFloorMap(d, f, p, showAll)
 	end
 end
 
-local typeText = table.setReadOnly{
-	[w.room.standard] = "standard",
-	[w.room.wall] = "wall",
-	[w.room.chest] = "chest",
-	[w.room.shop] = "shop",
-	[w.room.boss] = "boss",
-	[w.room.ladder] = "ladder",
-};
-
 function w.getTileType(dungeon, x, y, z)
-	if dungeon[z][x] then
-		if dungeon[z][x][y] then
-			return typeText[dungeon[z][x][y].type];
-		end
+	if dungeon[z][x] and dungeon[z][x][y] then
+		return dungeon[z][x][y].type;
 	end
 
 	return "wall";
 end
 
 local typeTextPrint = table.setReadOnly{
-	[w.room.standard] = "empty room",
-	[w.room.wall] = "wall",
-	[w.room.chest] = "chest room",
-	[w.room.shop] = "shop",
-	[w.room.boss] = "boss room",
-	[w.room.ladder] = "ladder room",
+	standard = "empty room",
+	wall = "wall",
+	chest = "chest room",
+	shop = "shop",
+	boss = "boss room",
+	ladder = "ladder room",
 };
 
 function w.getTileTypePrint(dungeon, x, y, z)
